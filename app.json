@@ -1,0 +1,44 @@
+{
+  "pages": [
+    "pages/login/login",
+    "pages/logs/logs",
+    "pages/home/home",
+    "pages/live-room-demo/room/liveroom",
+    "pages/live-room-demo/roomlist/roomlist",
+    "pages/live-room-demo/roomname/roomname",
+    "pages/index/index",
+    "pages/my/my"
+  ],
+  "window": {
+    "backgroundTextStyle": "light",
+    "navigationBarBackgroundColor": "#2db7f5",
+    "navigationBarTitleText": "WeChat",
+    "navigationBarTextStyle": "white",
+    "navigationStyle": "custom"
+  },
+  "tabBar": {
+    "color": "#888888",
+    "selectedColor": "#1d93ec",
+    "list": [
+      {
+        "pagePath": "pages/home/home",
+        "text": "主 页",
+        "iconPath": "images/主页.png",
+        "selectedIconPath": "images/主页-c.png"
+      },
+      {
+        "pagePath": "pages/index/index",
+        "text": "当 前",
+        "iconPath": "images/当前.png",
+        "selectedIconPath": "images/当前-c.png"
+      },
+      {
+        "pagePath": "pages/my/my",
+        "text": "我 的",
+        "iconPath": "images/我的.png",
+        "selectedIconPath": "images/我的-c.png"
+      }
+    ]
+  },  
+  "sitemapLocation": "sitemap.json"
+}
