@@ -6,6 +6,6 @@
 }
 
 @import "/app.wxss";
-@import "./1u3dtemplate/1u3dtemplate.wxss";
+@import "./bigsmalltemplate/bigsmalltemplate.wxss";
 @import "./gridtemplate/gridtemplate.wxss";
 @import "./floattemplate/floattemplate.wxss";

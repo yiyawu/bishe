@@ -1,4 +1,4 @@
-const webim = require('../../../utils/webim_wx');
+const webim = require('./webim_wx');
 
 module.exports = {
   initData(userData, groupData = {}) {
@@ -25,17 +25,21 @@ module.exports = {
    * @param {Function} fail 
    */
   loginIm(success, fail) {
-    webim.login(this.userData, this.loginListeners, {
-      isAccessFormalEnv: true,
-      isLogOn: false
-    }, success, fail);
+    if (!webim.checkLogin()) {
+      webim.login(this.userData, this.loginListeners, {
+        isAccessFormalEnv: true,
+        isLogOn: false
+      }, success, fail);
+    }
   },
 
   /**
    * 注销IM
    */
   logout() {
-    webim.logout();
+    if (webim.checkLogin()) {
+      webim.logout();
+    }
   },
 
   /**

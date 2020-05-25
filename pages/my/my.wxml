@@ -1,17 +1,23 @@
-<view>
+<view class='container-box'>
   <view class='head_container'>
-    <view class='head_image'>
+    <!-- <view class='head_image'>
       <image class='head_image_item' src='{{background}}' mode='aspectFill'></image>
-    </view>
+    </view> -->
 
     <view class="userinfo">
-      <image class="userinfo-avatar" src="{{userInfo.avatarUrl}}"></image>
+    <button class="userinfo-avatar" wx:if="{{!hasUserInfo && canIUse}}" open-type="getUserInfo" bindgetuserinfo="bindgetuserinfo"> <text class="userinfo-buttonname">点击登录</text> </button>
+    
+    <block wx:else>
+      <image class="userinfo-avatar" wx:if="{{userInfo.avatarUrl}}" src="{{userInfo.avatarUrl}}" mode="cover"></image>
+      <text class="userinfo-nickname">{{userInfo.nickName}}</text>
+    </block>
+ 
+      <!-- <image class="userinfo-avatar" src="{{userInfo.avatarUrl}}"></image>
       <view class="userinfo-nickname"> 
         <text>{{userInfo.nickName}}</text>
-      </view>
-      <view class="userinfo-role">
-        <text>认证等级\n实验室用户</text>
-      </view>
+      </view> -->
+        <text class="userinfo-role" >认证等级</text>
+        <text class="userinfo-authname">{{authName}}</text>
     </view>
 
   </view>
@@ -20,41 +26,34 @@
     <view class='block'></view>
     <view class='conference_container'>
       <view class='conference_list'>
-        <view class='conference_list_item'>
+        <view  wx:if="{{authFlag}}" class='conference_list_item'> <!--   -->
           <view class='conference_icon'>
             <image src='{{auth}}'></image>
           </view>
-          <view class='conference_item' bindtap='btn_auth'>用户认证</view>
-        </view>
-        <view class='conference_list_item'>
-          <view class='conference_icon'>
-            <image src='{{conference1}}'></image>
-          </view>
-          <view class='conference_item' bindtap='btn_start'>即将开始的会议</view>
-        </view>
-
+          <view class='conference_item' bindtap='btnAuth'>用户认证</view>
+        </view> 
         <view class='conference_list_item'>
           <view class='conference_icon'>
             <image src='{{conference2}}'></image>
           </view>
-          <view class='conference_item' bindtap='btn_recent'>我近期的会议</view>
+          <view class='conference_item' bindtap='btnRecent'>历史会议</view>
         </view>
         <view class='conference_list_item'>
           <view class='conference_icon'>
             <image src='{{conference3}}'></image>
           </view>
-          <view class='conference_item' bindtap='btn_create_list'>我创建的会议</view>
+          <view class='conference_item' bindtap='btnCreateList'>我创建的会议</view>
         </view>
         <view class='conference_list_item'>
           <view class='conference_icon'>
             <image src='{{conference4}}'></image>
           </view>
-          <view class='conference_item' style='border-bottom-width:0rpx;' bindtap='btn_attened'>我参加的会议</view>
+          <view class='conference_item' style='border-bottom-width:0rpx;' bindtap='btnAttened'>我参加的会议</view>
         </view>
       </view>
     </view>
 
-    <view class='conference_container'>
+    <view class='quit'>
       <view class='conference_list'>
 
         <view class='conference_list_item'>
@@ -72,6 +71,6 @@
         </view>
       </view>
     </view>
-    <view class='quit'><text>退出登录</text></view>
+    <!-- <view class='quit'><text>退出登录</text></view> -->
   </view>
 </view>

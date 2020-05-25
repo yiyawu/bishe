@@ -1,5 +1,4 @@
 const imHandler = require('./im_handler.js');
-const webim = require('../../../utils/webim_wx');
 const CONSTANT = require('./config.js');
 const app = getApp()
 
@@ -8,7 +7,7 @@ Component({
     multipleSlots: true // 启用多slot支持
   },
   properties: {
-    roomID: {
+    roomId: {
       type: Number,
       value: 0
     },
@@ -16,11 +15,15 @@ Component({
       type: String,
       value: ''
     },
-    userID: {
+    userId: {
+      type: Number,
+      value: 0
+    },
+    userName: {
       type: String,
       value: ''
     },
-    userName: {
+    useCamera: {
       type: String,
       value: ''
     },
@@ -32,28 +35,14 @@ Component({
       type: Number,
       value: 0
     },
-    privateMapKey: {
-      type: String,
-      value: ''
-    },
     template: {
       type: String,
-      value: '',
+      value: 'float',
       observer: function (newVal, oldVal) {
         this.initLayout(newVal)
       }
-    }, //使用的界面模版
-    beauty: {
-      type: Number,
-      value: 5
-    }, //美颜程度，取值为0~9
-
-    // 美白指数
-    whiteness: {
-      type: Number,
-      value: 5
-    },
-
+    }, 
+    //使用的界面模版
     aspect: {
       type: String,
       value: '3:4'
@@ -77,13 +66,7 @@ Component({
 
     enableIM: {
       type: Boolean, //是否启用IM
-      value: true
-    },
-
-    // 房间的创建者
-    roomCreator: {
-      type: String,
-      value: ''
+      value: false
     },
 
     useCloud: {
@@ -102,6 +85,39 @@ Component({
       value: true
     },
 
+    smallViewLeft: {
+      type: String,
+      value: '1vw'
+    },
+
+    smallViewTop: {
+      type: String,
+      value: '1vw'
+    },
+
+    smallViewWidth: {
+      type: String,
+      value: '30vw'
+    },
+
+    smallViewHeight: {
+      type: String,
+      value: '40vw'
+    },
+
+    waitingImg: {
+      type: String,
+      value: 'https://main.qcloudimg.com/raw/b14189beafbb8db8275e53c8cb596e1f.png'
+    },
+
+    // live-player的背景图
+    
+
+    loadingImg: {
+      type: String,
+      value: 'https://main.qcloudimg.com/raw/3e0a94d92a3b312a191cee4f96f0bd8b.png'
+    },
+
     pureAudioPushMod: {
       type: Number,
       value: 0
@@ -111,24 +127,25 @@ Component({
       type: Number,
       value: null
     }
-    // frontCamera: {type: Boolean, value: true, observer: function (newVal, oldVal) { this.switchCamera(); }},  //设置前后置摄像头，true表示前置
   },
   data: {
     requestSigFailCount: 0,
-    isCaster: false, // 默认是观众
     CONSTANT, // 常量
     pusherContext: '',
     hasPushStarted: false,
     pushURL: '',
-    members: [{}, {}, {}],
-    presenter: [{}], // presenter 代表主播，audience 代表观众
-    audience: [{}, {}],
+    accelerateURL: '', 
+    members: [],
+    mypush: '',
     maxMembers: 3,
     self: {},
+    startPlay: false,
     hasExitRoom: true,
-    headerHeight: app.globalData.headerHeight,
-    statusBarHeight: app.globalData.statusBarHeight,
-    creator: '',
+    useCamera:'',
+    fixPlayId: 'trtc_fix_play_id', // 大小画面的用来定位live-player的id
+    playerNetStatus:{
+      
+    },
     // 记录live-player的声音状态， 默认都是打开声音状态(false和undefined)
     playerMutedStatus: {
 
@@ -153,11 +170,6 @@ Component({
     if (!this.data.pusherContext) {
       this.data.pusherContext = wx.createLivePusherContext('rtcpusher');
     }
-    this.data.isCaster = this.data.roomCreator === this.data.userID; //是不是主播
-    this.setData({
-      isCaster: this.data.isCaster,
-      creator: this.data.roomCreator
-    });
   },
 
   detached: function () {
@@ -174,25 +186,18 @@ Component({
       self = this;
       switch (templateName) {
         // 1对1
-        case CONSTANT.TEMPLATE_TYPE['1V1']:
+        case CONSTANT.TEMPLATE_TYPE['BIGSMALL']:
           this.setData({
             maxMembers: 1,
             members: [{}],
-            presenter: [{}],
-            audience: [],
             template: templateName
           });
           break;
 
-        case CONSTANT.TEMPLATE_TYPE['1V3']: // 九宫格1V3
-        case CONSTANT.TEMPLATE_TYPE['1U3D']: // 1 up  3 down
-        case CONSTANT.TEMPLATE_TYPE['1L3R']: // 1 left 3 right
         default:
           this.setData({
             maxMembers: 3,
             members: [{}, {}, {}],
-            presenter: [{}],
-            audience: [{}, {}],
             template: templateName
           });
           break;
@@ -206,11 +211,11 @@ Component({
       imHandler.initData({
         'sdkAppID': this.data.sdkAppID, //用户所属应用id,必填
         'appIDAt3rd': this.data.sdkAppID, //用户所属应用id，必填
-        'identifier': this.data.userID, //当前用户ID,必须是否字符串类型，选填
-        'identifierNick': this.data.userName || this.data.userID, //当前用户昵称，选填
+        'identifier': this.data.userId, //当前用户ID,必须是否字符串类型，选填
+        'identifierNick': this.data.userName || this.data.userId, //当前用户昵称，选填
         'userSig': this.data.userSig
       });
-
+      console.log(imHandler.initData)
       // 初始化Im登录回调
       imHandler.initLoginListeners(this.imLoginListener());
 
@@ -219,7 +224,7 @@ Component({
         // 登录成功
         this.fireIMEvent(CONSTANT.IM.LOGIN_EVENT, res.ErrorCode, res);
         // 创建或者加入群
-        imHandler.joinGroup(this.data.roomID, (res) => {
+        imHandler.joinGroup(this.data.roomId, (res) => {
           // 创建或者加入群成功
           this.fireIMEvent(CONSTANT.IM.JOIN_GROUP_EVENT, res.ErrorCode, res);
         }, (error) => {
@@ -235,14 +240,14 @@ Component({
     /**
      * 打开或者关闭某一路画面
      * @param {Boolean} enable 
-     * @param {String} userid  userid = 0 代表打开或关闭本地的摄像头画面
+     * @param {String} userId  userId = 0 代表打开或关闭本地的摄像头画面
      */
-    enableVideo(enable, userid) {
-      if (userid) {
-        var playerContext = wx.createLivePlayerContext(userid, this);
+    enableVideo(enable, userId) {
+      if (userId) {
+        var playerContext = wx.createLivePlayerContext(userId, this);
         if (playerContext) {
           // 获取用户视频状态，默认是播放用户视频， true 播放   false 不播放
-          var videoStatus = this.data.playerVideoStatus[userid];
+          var videoStatus = this.data.playerVideoStatus[userId];
           // 如果 enable = true（想要打开画面）  
           if (enable) {
             if (videoStatus) {
@@ -251,7 +256,7 @@ Component({
               // 如果原来是关闭状态，则打开
               playerContext.play();
               var playerVideoStatus = this.data.playerVideoStatus;
-              playerVideoStatus[userid] = true; // 设置为打开状态
+              playerVideoStatus[userId] = true; // 设置为打开状态
               this.setData({
                 playerVideoStatus: playerVideoStatus
               })
@@ -261,7 +266,7 @@ Component({
               // 原来是打开状态，则关闭
               // playerContext.stop();
               var playerVideoStatus = this.data.playerVideoStatus;
-              playerVideoStatus[userid] = false; // 设置为关闭状态
+              playerVideoStatus[userId] = false; // 设置为关闭状态
               this.setData({
                 playerVideoStatus: playerVideoStatus
               })
@@ -281,14 +286,14 @@ Component({
     /**
      * 打开或者关闭某一路声音
      * @param {*} enable 
-     * @param {*} userid  userid = 0 代表打开或关闭本地的麦克风声音
+     * @param {*} userId  userId = 0 代表打开或关闭本地的麦克风声音
      */
-    enableAudio(enable, userid, params = {}) {
-      if (userid) {
-        var playerContext = wx.createLivePlayerContext(userid, this);
+    enableAudio(enable, userId, params = {}) {
+      if (userId) {
+        var playerContext = wx.createLivePlayerContext(userId, this);
         if (playerContext) {
           // 获取用户声音的状态，默认false 打开声音  true 关闭声音
-          var muted = this.data.playerMutedStatus[userid];
+          var muted = this.data.playerMutedStatus[userId];
 
           // 如果 enable = true（想要打开声音）  
           if (enable) {
@@ -296,7 +301,7 @@ Component({
             if (muted) {
               playerContext.mute(params);
               var playerMutedStatus = this.data.playerMutedStatus;
-              playerMutedStatus[userid] = false; // 设置为打开状态
+              playerMutedStatus[userId] = false; // 设置为打开状态
               this.setData({
                 playerMutedStatus: playerMutedStatus
               })
@@ -310,7 +315,7 @@ Component({
               // 原来是打开状态，则关闭
               playerContext.mute(params);
               var playerMutedStatus = this.data.playerMutedStatus;
-              playerMutedStatus[userid] = true; // 设置为关闭状态
+              playerMutedStatus[userId] = true; // 设置为关闭状态
               this.setData({
                 playerMutedStatus: playerMutedStatus
               })
@@ -363,8 +368,9 @@ Component({
      */
     start: function () {
       self = this;
+      console.log(self.data)
       self.data.hasExitRoom = false;
-      self.requestSigServer(self.data.userSig, self.data.privateMapKey);
+      self.requestServer(self.data.userSig, self.data.privateMapKey,self.data.useCamera);
       if (this.data.enableIM) {
         this.initIm(); // 初始化IM
       }
@@ -422,7 +428,6 @@ Component({
         self.data.pusherContext = wx.createLivePusherContext('rtcpusher');
       }
       self.data.pusherContext && self.data.pusherContext.stop && self.data.pusherContext.stop();
-
       self.data.members.forEach(function (val) {
         val.playerContext && val.playerContext.stop();
       });
@@ -430,15 +435,31 @@ Component({
       for (var i = 0; i < self.data.maxMembers; i++) {
         self.data.members[i] = {};
       }
-
-      var role = this.filterRole();
       self.setData({
-        members: self.data.members,
-        presenter: role.presenter,
-        audience: role.audience
+        pushURL: "",
+        members: self.data.members
       });
-    },
 
+    },
+    requestServer: function(userId, roomId, flag) {
+      //提交房间信息接口
+      console.log(flag)
+        app.func.postJson('weixinGetPushurl', {
+          userId: wx.getStorageSync('userId'),
+          roomId: this.data.roomId,
+          flag: this.data.useCamera,
+          template: this.data.template
+        }, (res) => {
+          this.setData({
+            pushURL: res.data.myurlInfo.pushUrl,
+            members: res.data.members,
+            mypush: res.data.mypushUrl
+          })
+          console.log(res.data)
+          console.log(this.data.members)
+          console.log(this.data.mypush)
+        });
+    },
     postErrorEvent: function (errCode, errMsg) {
       self.postEvent('error', errCode, errMsg);
     },
@@ -451,121 +472,8 @@ Component({
       }, {});
     },
 
-    /**
-     * 请求SIG服务
-     */
-    requestSigServer: function (userSig, privMapEncrypt) {
-      console.log('获取sig:', this.data);
-
-      var self = this;
-      var roomID = this.data.roomID;
-      var userID = this.data.userID;
-      var sdkAppID = this.data.sdkAppID;
-
-      var url = this.data.useCloud ? 'https://official.opensso.tencent-cloud.com/v4/openim/jsonvideoapp' : 'https://yun.tim.qq.com/v4/openim/jsonvideoapp';
-      url += '?sdkappid=' + sdkAppID + "&identifier=" + userID + "&usersig=" + userSig + "&random=9999&contenttype=json";
-
-      var reqHead = {
-        "Cmd": 1,
-        "SeqNo": 1,
-        "BusType": 7,
-        "GroupId": roomID
-      };
-      var reqBody = {
-        "PrivMapEncrypt": privMapEncrypt,
-        "TerminalType": 1,
-        "FromType": 3,
-        "SdkVersion": 26280566
-      };
-      console.log("requestSigServer params:", url, reqHead, reqBody);
-
-      wx.request({
-        url: url,
-        data: {
-          "ReqHead": reqHead,
-          "ReqBody": reqBody
-        },
-        method: "POST",
-        success: function (res) {
-          console.log("requestSigServer success:", res);
-          if (res.data["RspHead"]["ErrorCode"] != 0) {
-            console.log(res.data["RspHead"]["ErrorInfo"]);
-            wx.showToast({
-              icon: 'none',
-              title: res.data["RspHead"]["ErrorInfo"],
-            })
-
-            self.data.requestSigFailCount++;
-            // 重试3次后还是错误，则抛出错误
-            if (self.data.requestSigFailCount > 3) {
-              self.postErrorEvent(self.data.ERROR_REQUEST_ROOM_SIG, '获取房间SIG错误');
-            } else {
-              setTimeout(() => {
-                console.error('>>>>>>>>', '获取房间sig失败，重试~');
-                self.requestSigServer(userSig, privMapEncrypt);
-              }, 2000);
-            }
-            return;
-          }
-
-          self.data.requestSigFailCount = 0;
-
-          var roomSig = JSON.stringify(res.data["RspBody"]);
-          var pushUrl = "room://cloud.tencent.com?sdkappid=" + sdkAppID + "&roomid=" + roomID + "&userid=" + userID + "&roomsig=" + encodeURIComponent(roomSig);
-
-          // 如果有配置纯音频推流或者recordId参数
-          if (self.data.pureAudioPushMod || self.data.recordId) {
-            var bizbuf = {
-              Str_uc_params: {
-                pure_audio_push_mod: 0,
-                record_id: 0
-              }
-            }
-            // 纯音频推流
-            if (self.data.pureAudioPushMod) {
-              bizbuf.Str_uc_params.pure_audio_push_mod = self.data.pureAudioPushMod
-            } else {
-              delete bizbuf.Str_uc_params.pure_audio_push_mod;
-            }
-
-            // 自动录制时业务自定义id
-            if (self.data.recordId) {
-              bizbuf.Str_uc_params.record_id = self.data.recordId
-            } else {
-              delete bizbuf.Str_uc_params.record_id;
-            }
-            pushUrl += '&bizbuf=' + encodeURIComponent(JSON.stringify(bizbuf));
-          }
-
-          console.log("roomSigInfo", roomID, userID, roomSig, pushUrl);
-
-          self.setData({
-            pushURL: pushUrl,
-            userID: userID
-          });
-        },
-        fail: function (res) {
-          console.log("requestSigServer fail:", res);
-          wx.showToast({
-            title: '获取房间签名失败',
-          });
-
-          self.data.requestSigFailCount++;
-          // 重试3次后还是错误，则抛出错误
-          if (self.data.requestSigFailCount > 3) {
-            self.postErrorEvent(self.data.ERROR_REQUEST_ROOM_SIG, '获取房间SIG错误');
-          } else {
-            setTimeout(() => {
-              console.error('>>>>>>>>', '获取房间sig失败，重试~');
-              self.requestSigServer(userSig, privMapEncrypt);
-            }, 2000);
-          }
-        }
-      })
-    },
-
     onWebRTCUserListPush: function (msg) {
-      console.log('================= onWebRTCUserListPush method', msg);
+      console.log('onWebRTCUserListPush method', msg);
       if (!msg) {
         return;
       }
@@ -575,9 +483,8 @@ Component({
         return;
       }
 
-      console.log("onWebRTCUserListPush.jsonDict:", jsonDic);
       var newUserList = jsonDic.userlist;
-      console.log('=== newUserList: ', JSON.stringify(newUserList));
+      console.log('play_users: ', JSON.stringify(newUserList));
 
       if (!newUserList) {
         return;
@@ -585,11 +492,13 @@ Component({
 
       var pushers = [];
       newUserList && newUserList.forEach(function (val) {
+        console.log(val)
         var pusher = {
-          userID: val.userid,
+          userId: val.userId,
           accelerateURL: val.playurl
         };
         pushers.push(pusher);
+        console.log(pusher)
       });
 
       // 如果超过了最大人数，则检测出不在members里面的成员，并通知他
@@ -612,26 +521,32 @@ Component({
         var emptyIndex = -1;
         var hasPlay = false;
         for (var i = 0; self.data.members && i < self.data.members.length; i++) {
-          if (self.data.members[i].userID && self.data.members[i].userID == val.userID) {
+          if (self.data.members[i].userId && self.data.members[i].userId == val.userId) {
             hasPlay = true;
-          } else if (!self.data.members[i].userID && emptyIndex == -1) {
+          } else if (!self.data.members[i].userId && emptyIndex == -1) {
             emptyIndex = i;
           }
         }
         if (!hasPlay && emptyIndex != -1) {
           val.loading = false;
-          val.playerContext = wx.createLivePlayerContext(val.userID);
+
+          // 如果是bigsmall大小画面，则使用固定的id
+          if (self.data.template == 'bigsmall') {
+            val.playerContext = wx.createLivePlayerContext(self.data.fixPlayId, self);
+          } else {
+            val.playerContext = wx.createLivePlayerContext(val.userId, self);
+          }
+          // val.playerContext = wx.createLivePlayerContext(val.userId);
           self.data.members[emptyIndex] = val;
         }
 
-        self.initPlayerStatus(val.userID);
-      });
-
-      var role = this.filterRole();
-      self.setData({
-        members: self.data.members,
-        presenter: role.presenter,
-        audience: role.audience
+        self.setData({
+          members: self.data.members
+        });
+        console.log("这是push加入")
+        console.log(self.data.members)
+        console.log("~~~~~~~~~~~~~~")
+        self.initPlayerStatus(val.userId);
       });
     },
 
@@ -640,7 +555,7 @@ Component({
       for (var i = 0; i < self.data.members.length; i++) {
         var needDelete = true;
         for (var j = 0; j < res.pushers.length; j++) {
-          if (self.data.members[i].userID == res.pushers[j].userID) {
+          if (self.data.members[i].userId == res.pushers[j].userId) {
             needDelete = false;
           }
         }
@@ -649,13 +564,13 @@ Component({
           //   var player = wx.createLivePlayerContext(self.data.members[i].userID);
           //   player && player.stop();
           // }
-          var userid = self.data.members[i].userID;
-          if (userid) {
-            if (self.data.playerVideoStatus[userid]) {
-              delete self.data.playerVideoStatus[userid];
+          var userId = self.data.members[i].userId;
+          if (userId) {
+            if (self.data.playerVideoStatus[userId]) {
+              delete self.data.playerVideoStatus[userId];
             }
-            if (self.data.playerMutedStatus[userid]) {
-              delete self.data.playerMutedStatus[userid];
+            if (self.data.playerMutedStatus[userId]) {
+              delete self.data.playerMutedStatus[userId];
             }
           }
           self.setData({
@@ -665,45 +580,42 @@ Component({
           self.data.members[i] = {};
         }
       }
-
-      var role = this.filterRole();
       self.setData({
-        members: self.data.members,
-        presenter: role.presenter,
-        audience: role.audience
+        members: self.data.members
       });
+      console.log("这是push退出")
+      console.log(self.data.members)
+      console.log("~~~~~~~~~~~~~~")
     },
 
     //删除res.pushers
     delPusher: function (pusher) {
       for (var i = 0; i < self.data.members.length; i++) {
-        if (self.data.members[i].userID == pusher.userID) {
-          var player = wx.createLivePlayerContext(pusher.userID);
+        if (self.data.members[i].userId == pusher.userId) {
+          var player = wx.createLivePlayerContext(pusher.userId);
           player && player.stop();
           self.data.members[i] = {};
         }
       }
-      var role = this.filterRole();
       self.setData({
-        members: self.data.members,
-        presenter: role.presenter,
-        audience: role.audience
+        members: self.data.members
       });
     },
 
     // 推流事件
     onPush: function (e) {
-      console.log('============== onPush e userID', this.data.userID);
+      console.log('============== onPush e userId', this.data.userId);
       if (!self.data.pusherContext) {
         self.data.pusherContext = wx.createLivePusherContext('rtcpusher');
       }
       var code;
+      console.log(e.detail)
       if (e.detail) {
         code = e.detail.code;
       } else {
         code = e;
       }
-      console.log('>>>>>>>>>>>> 推流情况：', code);
+      console.log('推流事件：', code);
       var errmessage = '';
       switch (code) {
         case 1002:
@@ -761,14 +673,7 @@ Component({
             console.log('网络类型发生变化，需要重新进房', code);
             //先退出房间
             self.exitRoom();
-
-            //再重新进入房间
-            // this.setData({
-            //   retryIndex: 5,
-            // })
-
             self.start();
-
             break;
           }
         case 2007:
@@ -790,17 +695,23 @@ Component({
 
     // 标签错误处理
     onError: function (e) {
-      console.log('推流错误：', e);
-      e.detail.errCode == 10001 ? (e.detail.errMsg = '未获取到摄像头功能权限，请删除小程序后重新打开') : '';
-      e.detail.errCode == 10002 ? (e.detail.errMsg = '未获取到录音功能权限，请删除小程序后重新打开') : '';
-      self.postErrorEvent(self.data.ERROR_CAMERA_MIC_PERMISSION, e.detail.errMsg || '未获取到摄像头、录音功能权限，请删除小程序后重新打开')
+      console.error('onError: ', e);
+      // 最新版的微信在live-pusher上有坑，binderror事件返回的数据有问题，原来返回的数据是在detail字段中，最新版本返回在details中  
+      // 这里已经和微信小程序的开发确认过，下一个版本会修复成detail。
+      // 当前版本需要做兼容处理。
+      let detail = e.detail || e.details;
+      detail.errCode == 10001 ? (detail.errMsg = '未获取到摄像头功能权限，请删除小程序后重新打开') : '';
+      detail.errCode == 10002 ? (detail.errMsg = '未获取到录音功能权限，请删除小程序后重新打开') : '';
+      self.postErrorEvent(self.data.ERROR_CAMERA_MIC_PERMISSION, detail.errMsg || '未获取到摄像头、录音功能权限，请删除小程序后重新打开')
     },
 
     //播放器live-player回调
     onPlay: function (e) {
-      console.log('>>>>>>>>>>>> onPlay code:', e.detail.code);
+      console.log(e.detail)
+      console.log('onPlay code: ', e.detail.code);
       self.data.members.forEach(function (val) {
-        if (e.currentTarget.id == val.userID) {
+        console.log(val)
+        if ((self.data.template == 'bigsmall' && e.currentTarget.id === self.data.fixPlayId) || e.currentTarget.id == val.userId) {
           switch (e.detail.code) {
             case 2007:
               {
@@ -812,12 +723,17 @@ Component({
               {
                 console.log('视频播放开始: ', e);
                 val.loading = false;
+                setTimeout(() => {
+                  self.setData({
+                    startPlay: true
+                  });
+                }, 500);
                 break;
               }
             case -2301:
               {
                 console.error('网络连接断开，且重新连接亦不能恢复，播放器已停止播放', val);
-                self.delPusher(val);
+                self.start();
                 break;
               }
             default:
@@ -827,43 +743,8 @@ Component({
           }
         }
       });
-
-      var role = this.filterRole();
-      self.setData({
-        members: self.data.members,
-        presenter: role.presenter,
-        audience: role.audience
-      });
     },
 
-    filterRole() {
-      var presenter = [];
-      var audience = [];
-      for (var i = 0; i < self.data.members.length; i++) {
-        if (self.data.members[i].userID == this.data.creator) {
-          presenter.push(self.data.members[i]);
-        } else {
-          audience.push(self.data.members[i]);
-        }
-      }
-
-      if (this.data.isCaster) { // 如果自己是主播
-
-      } else { // 如果自己不是主播
-        if (self.data.maxMembers === 3 && audience.length > 2) { // 如果是1pusher 3个player
-          audience = audience.slice(0, 2); // 只有2个观众
-        }
-
-        if (!presenter.length) { // 如果主播没有, 要保证有一个主播
-          presenter = [{}];
-        }
-      }
-
-      return {
-        presenter,
-        audience
-      }
-    },
 
     // IM登录监听
     imLoginListener() {
@@ -1002,6 +883,7 @@ Component({
     // 初始化状态
     initPlayerStatus(uid) {
       var status = this.data.playerVideoStatus[uid];
+      console.log(status)
       if (typeof status === 'undefined') {
         this.data.playerVideoStatus[uid] = !!this.data.autoplay;
         var playerVideoStatus = this.data.playerVideoStatus;

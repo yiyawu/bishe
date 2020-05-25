@@ -18,7 +18,7 @@ const formatNumber = n => {
 function postForm(url, data, cb) {
   wx.showLoading({})    //加载动画  
   wx.request({
-    url: 'http://localhost:5000/' + url,   //域名 （据情况而定）  url为地址
+    url: 'http://192.168.1.105:1231/' + url,   //域名 （据情况而定）  url为地址
     data: data,  //所需要传的参数
     header: {
       "Content-Type": "application/x-www-form-urlencoded",   // 处理form表单的请求头
@@ -46,7 +46,7 @@ function postForm(url, data, cb) {
 function postJson(url, data, cb) {
   wx.showLoading({})
   wx.request({
-    url: 'http://localhost:5000/' + url,
+    url: 'http://192.168.1.105:1231/' + url,
     data: data,
     header: {
       "Content-Type": "application/json;charset=UTF-8",
@@ -75,7 +75,7 @@ function postJson(url, data, cb) {
 function getJson(url, data, cb) {
   wx.showLoading({})
   wx.request({
-    url: 'http://localhost:5000/' + url,
+    url: 'http://192.168.1.105:1231/' + url,
     data: data,
     header: {
       "Content-Type": "application/json;charset=UTF-8",

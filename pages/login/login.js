@@ -15,6 +15,7 @@ Page({
    * 生命周期函数--监听页面加载
    */
   onLoad: function (options) {
+    console.log(this.data.hasUserInfo)
     if (app.globalData.userInfo) {
       this.setData({
         userInfo: app.globalData.userInfo,
@@ -101,6 +102,16 @@ Page({
         console.log("登录成功"),
           console.log(res.data)
       })
+      //获取直播权限
+      app.func.getJson('weixinGetAuthFlag', {
+        userId: userId,
+      }, (res) => {
+        console.log(res)
+        wx.setStorage({
+          key: "authFlag",
+          data: res.data.authFlag
+        })
+      });
     }
     wx.reLaunch({
       url: '/pages/home/home'

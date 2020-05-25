@@ -9,6 +9,7 @@ Page({
     background: '/images/my-timg.png',
     userInfo: {},
     hasUserInfo: false,
+    authFlag: 0,
     canIUse: wx.canIUse('button.open-type.getUserInfo'),
     auth: '/images/auth.png',
     conference1: '/images/comingmeeting.png',
@@ -16,7 +17,8 @@ Page({
     conference3: '/images/joinmeeting.png',
     conference4: '/images/creatmeeting.png',
     contact: '/images/contact.png',
-    feedback: '/images/feedback.png'
+    feedback: '/images/feedback.png',
+    authName:'',
   },
 
   /**
@@ -24,6 +26,8 @@ Page({
    */
   onLoad: function (options) {
     var that = this
+    console.log(this.data.hasUserInfo)
+    console.log(that.data.userInfo)
     if (app.globalData.userInfo) {
       this.setData({
         userInfo: app.globalData.userInfo,
@@ -51,7 +55,61 @@ Page({
       })
     }
   },
+  bindgetuserinfo: function (e) {
+    app.globalData.userInfo = e.detail.userInfo
+    console.log(e.detail.userInfo)
+    this.setData({
+      userInfo: e.detail.userInfo,
+      hasUserInfo: true
+    })
+    wx.login({
+      success: res => {
+        console.log(res.code)
+        console.log(res)
+        app.func.postJson('weixinAuthorize', {
+          code: res.code,  
+          nickName: e.detail.userInfo.nickName,
+          avatarUrl: e.detail.userInfo.avatarUrl
+        }, (res) => {
+          console.log(res.data)
+          this.setData({
+            userId: res.data.userId,
+          })
+          wx.setStorage({
+            key: "userId",
+            data: res.data.userId
+          })
+        })
+        // 发送 res.code 到后台换取 openId, sessionKey, unionId
+      },
+    })
+  },
 
+  btnAuth: function(e) {
+    console.log("用户认证")
+    wx.navigateTo({
+      url: '/pages/authenticate/authenticate?userId=' + wx.getStorageSync('userId'),
+    })
+  },
+  btnRecent: function (e) {
+    console.log("我近期的会议")
+    wx.navigateTo({
+      url: '/pages/history/history?userId=' + wx.getStorageSync('userId') +'&&mode=all',
+    })
+  },
+  btnCreateList: function (e) {
+    console.log("我创建的会议")
+    wx.navigateTo({
+      url: '/pages/history/history?userId=' + wx.getStorageSync('userId') + '&&mode=creat',
+    })
+  },
+  btnAttened: function (e) {
+    console.log("我参加的会议")
+    wx.navigateTo({
+      url: '/pages/history/history?userId=' + wx.getStorageSync('userId') + '&&mode=add',
+    })
+  },
+   
   /**
    * 生命周期函数--监听页面初次渲染完成
    */
@@ -63,7 +121,18 @@ Page({
    * 生命周期函数--监听页面显示
    */
   onShow: function () {
-
+    this.data.authFlag = wx.getStorageSync('authFlag')
+    console.log(this.data.authFlag)
+    if(this.data.authFlag == 1){
+      this.setData({
+        authName: "实验室用户"
+      })
+    }
+    else{
+      this.setData({
+        authName: "游客"
+      })
+    }
   },
 
   /**
@@ -79,25 +148,4 @@ Page({
   onUnload: function () {
 
   },
-
-  /**
-   * 页面相关事件处理函数--监听用户下拉动作
-   */
-  onPullDownRefresh: function () {
-
-  },
-
-  /**
-   * 页面上拉触底事件的处理函数
-   */
-  onReachBottom: function () {
-
-  },
-
-  /**
-   * 用户点击右上角分享
-   */
-  onShareAppMessage: function () {
-
-  }
 })

@@ -1,9 +1,6 @@
 const CONSTANT = {
   TEMPLATE_TYPE: {
-    '1V1': '1v1',
-    '1V3': '1v3',
-    '1U3D': '1u3d',
-    '1L3R': '1l3r'
+    'BIGSMALL': 'bigsmall' // 大小画面
   },
 
   IM: {

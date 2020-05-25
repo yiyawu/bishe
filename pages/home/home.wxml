@@ -4,23 +4,62 @@
   <view class='title'style='padding-top:{{(headerHeight + statusBarHeight)/2 - 12}}px'>
     <text>视频会议</text>
   </view>
+  <!-- 新建会议按钮 -->
   <view class='guide-box'>
-    <view wx:for="{{entryInfos}}" wx:key="*this" id="{{index}}" class='guide' bindtap='onEntryTap'>
+    <view wx:for="{{liveRoom}}" wx:key="*this" id="{{index}}" class='guide' bindtap='onEntryTap'>
       <block>
         <image class="guide_icon" src="{{item.icon}}" mode="aspectFit" />
         <view class="guide_label">{{item.title}}</view>
-        <view class="guide_desc">{{item.desc}}</view>
       </block>
     </view>
-    <!-- <view class='guide-nomore guide-nomore-bk'>
-      <view class="guide_nomore_label">
-        <view>更多功能</view>
-        <view>敬请期待</view> 
-      </view>
-    </view> -->
-    <!-- <view class='guide-nomore'></view> -->
+
   </view>
-  <view class='logo-box'>
-    <image class='logo' src='/images/logo.png'></image>
+  <!-- 历史会议模块 -->
+  <view class='list_title'>
+    <text>历史会议</text>
   </view>
+  <view class='list_container'>
+    <view wx:if='{{meetingInfo}}' wx:key='key' class='list_item'>
+        <view class='info_container'>
+          <view class='item_title'>
+            <text>会议名称：{{meetingInfo.roomName}}</text>
+          </view>    
+            <view class='item_place'>
+              <text wx:if='{{meetingInfo.template!=""}}'>会议模式：{{meetingInfo.template}}</text>
+              <text wx:if='{{meetingInfo.template==""}}'>会议模式：{{meetingInfo.template}}</text>
+            </view>
+            <view class='item_time'><text>开始时间：{{meetingInfo.creatAt}}</text></view>
+            <view class='item_introduce'><text>参会人员：{{meetingInfo.attendeeArray}}</text></view>
+            <view class='item_introduce2'><text>发起人：{{meetingInfo.userId}}</text></view>
+            <view class='item_action' bindtap='history'>
+              <view class='more' data-id='all'><text>详 情</text></view>
+            </view>
+          </view>
+    </view>
+  </view>
+  <!-- 主持会议模块 -->
+  <view class='list_title'>
+    <text>我主持的会议</text>
+  </view>
+
+    <view class='list_container'>
+    <view wx:if='{{meetingInfo}}' wx:key='key' class='list_item'>
+      <!-- <image src='{{item.cover}}'></image> -->
+        <view class='info_container'>
+          <view class='item_title'>
+            <text>会议名称：{{meetingInfo.roomName}}</text>
+          </view>    
+            <view class='item_place'>
+              <text wx:if='{{meetingInfo.template!=""}}'>会议模式：{{meetingInfo.template}}</text>
+              <text wx:if='{{meetingInfo.template==""}}'>会议模式：{{meetingInfo.template}}</text>
+            </view>
+            <view class='item_time'><text>开始时间：{{meetingInfo.creatAt}}</text></view>
+            <view class='item_introduce'><text>参会人员：{{meetingInfo.attendeeArray}}</text></view>
+            <view class='item_introduce2'><text>发起人：{{meetingInfo.userId}}</text></view>
+            <view class='item_action' bindtap='mycreathistory'>
+              <view class='more' data-id='creat'><text>详 情</text></view>
+            </view>
+          </view>
+    </view>
+    </view>
 </view>

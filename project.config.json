@@ -18,7 +18,8 @@
 			"ignore": [],
 			"disablePlugins": [],
 			"outputPath": ""
-		}
+		},
+		"enhance": true
 	},
 	"compileType": "miniprogram",
 	"libVersion": "2.9.3",
@@ -62,9 +63,44 @@
 					"scene": null
 				},
 				{
+					"id": 1,
+					"name": "pages/attendance/index",
+					"pathName": "pages/attendance/index",
+					"query": "",
+					"scene": null
+				},
+				{
 					"id": -1,
-					"name": "pages/home/home",
-					"pathName": "pages/home/home",
+					"name": "pages/live-room/creat-room/creat-room",
+					"pathName": "pages/live-room/creat-room/creat-room",
+					"query": "",
+					"scene": null
+				},
+				{
+					"id": 3,
+					"name": "pages/live-room/live-room/live-room",
+					"pathName": "pages/live-room/live-room/live-room",
+					"query": "sdkAppID= 1400311699&&template = bigsmall&&roomID=92&&userSig= eJyrVgrxCdYrSy1SslIy0jNQ0gHzM1NS80oy0zLBwoYmUNHilOzEgoLMFCUrMwMTCwMDiGhJZm6qkpWhqYWxiaG5GUw0taIgswgsbmpqZAATLc5MBxoYlOvrXhTpoV-olJ5tqO8UYRYV6BgQYViWG*qaG*4Tpe3oYRxmUVweaBBlYatUCwB44S37&&userID=14",
+					"scene": null
+				},
+				{
+					"id": -1,
+					"name": "pages/authenticate/authenticate",
+					"pathName": "pages/authenticate/authenticate",
+					"query": "sdkAppID= 1400311699&&template = bigsmall&&roomID=123&&userSig= eJyrVgrxCdYrSy1SslIy0jNQ0gHzM1NS80oy0zLBwoYmUNHilOzEgoLMFCUrMwMTCwMDiGhJZm6qkpWhqYWxiaG5GUw0taIgswgsbmpqZAATLc5MBxoYlOvrXhTpoV-olJ5tqO8UYRYV6BgQYViWG*qaG*4Tpe3oYRxmUVweaBBlYatUCwB44S37&&userID=14",
+					"scene": null
+				},
+				{
+					"id": -1,
+					"name": "pages/live-room/enter-room/enter-room",
+					"pathName": "pages/live-room/enter-room/enter-room",
+					"query": "",
+					"scene": null
+				},
+				{
+					"id": -1,
+					"name": "pages/history/history",
+					"pathName": "pages/history/history",
 					"query": "",
 					"scene": null
 				}

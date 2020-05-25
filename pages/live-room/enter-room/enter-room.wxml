@@ -1,0 +1,12 @@
+<view class='container-box'>
+  <view class='title' style='padding-top:{{(headerHeight + statusBarHeight)/2 - 12}}px'>
+    <view>加入视频会议</view>
+  </view>
+  <view class="input-box">
+    <input type="number" value="{{roomId}}" maxlength="20" bindinput='bindInviteNO' placeholder="请输入邀请码" placeholder-style="color:#ffffff;"/>
+  </view>
+</view>
+<view class='bottom-btn'>
+  <button type="primary" bindtap="joinRoom" hover-class="none">进入房间</button>
+</view>
+<cover-image class='close' style="top:62rpx" src="/images/back.png" bindtap="onBack"></cover-image>
