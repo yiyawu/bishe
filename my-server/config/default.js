@@ -13,23 +13,23 @@ const config = {
     },
     //小程序配置
     //APPID 
-    appid: 'wx5dd1de0c75a47e61',  
+    appid: '',//填写自己的小程序ID  
     //APP密钥
-    secret: '81512d491150a43ab76044e09199780f',
+    secret: '',//填写自己的小程序密钥
 
     //直播配置
     //推流地址
-    pushUrl: 'wcybysj.xyz',
+    pushUrl: '', //填写满足cname的推流地址
     //推流地址的主key
-    pushKey: '20829d6b37605f68f20b1d052a2f78db',
+    pushKey: '',
     //播放地址
-    playUrl: 'wcybysj.cn',
+    playUrl: '', //填写满足cname的播放地址地址
     //播放地址的主key
-    playKey: 'wcy',
+    playKey: '',
     //im的API鉴权KEY
-    APIKey:'20829d6b37605f68f20b1d052a2f78db',
+    APIKey:'', //去IM控制台那边查看IM信息
     //im的appID
-    appID: 1258544465,
+    appID: xxx,//去IM控制台那边查看IM信息
   }
   
   module.exports = config
