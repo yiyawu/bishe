@@ -1,0 +1,25 @@
+<template name="floattemplate">
+  <view class="float videoview">
+    <view class="pusher-box">
+      <live-player id="rtcplayer" autoplay mode="RTC"  object-fit="fillCrop" min-cache="0.1" max-cache="0.3" src="{{pushURL}}" debug="{{debug}}" background-mute="{{true}}" bindstatechange="onPlay">
+        <slot name="float"></slot>
+      </live-player>
+      
+    </view>
+    <view class="player-box">
+      <view class="player-item">
+      <live-pusher id="rtcpusher" autopush mode="RTC" url="{{mypush}}" aspect="{{aspect}}" min-bitrate="{{minBitrate}}" max-bitrate="{{maxBitrate}}" audio-quality="high" muted="{{muted}}" enable-camera="{{enableCamera}}" waiting-image="{{waitingImg}}" background-mute="{{true}}" debug="{{debug}}" bindstatechange="onPush" >
+        <slot name="float"></slot>
+      </live-pusher>
+      </view>
+      <view class="player-item" wx:for="{{members}}" wx:key="userId">
+
+        <live-player id="{{item.userId}}" autoplay mode="RTC" wx:if="{{item.playUrl.urlPlayAcc}}" object-fit="fillCrop" min-cache="0.1" max-cache="0.3" src="{{item.playUrl.urlPlayAcc}}" debug="{{debug}}" background-mute="{{true}}" bindstatechange="onPlay">
+          <cover-view class="loading" wx:if="{{item.loading && loadingImg}}">
+            <cover-image src="{{loadingImg}}"></cover-image>
+          </cover-view>
+        </live-player>
+      </view>
+    </view>
+  </view>
+</template>

@@ -1,0 +1,8 @@
+/* pages/history/history.wxss */
+.page {
+  overflow-x: hidden;
+}
+.head{ 
+  height: 25vw;
+  width: 100vw
+}
